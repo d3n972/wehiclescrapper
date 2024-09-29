@@ -17,4 +17,4 @@ jobs:
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag  ghcr.io/d3n972/wehiclescrapper
     - name: Publish image
-      run: docker push -t ghcr.io/d3n972/wehiclescrapper
+      run: docker push ghcr.io/d3n972/wehiclescrapper
