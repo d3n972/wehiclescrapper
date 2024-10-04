@@ -7,7 +7,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 24Gi
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -16,6 +16,15 @@ metadata:
 data:
   API_URL: "https://go.bkk.hu/api/query/v1/ws/otp/api/where/vehicles-for-location.json?lat=47.51152389058045&latSpan=0.0536376020654896&lon=19.06933642193823&lonSpan=0.10078281959248159&key=web-54feeb28-a942-48ae-89a5-9955879ebb2c&version=4&appVersion=3.18.0-164644-810354-e3dd8127"
   FETCH_INTERVAL: "10000"
+---
+apiVersion: v1
+data:
+  uri: bW9uZ29kYjovL21vbmdvZGI6MjcwMTc=
+kind: Secret
+metadata:
+  name: mongodb-secret
+  namespace: default
+type: Opaque
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -33,7 +42,7 @@ spec:
     spec:
       containers:
       - name: mongodb
-        image: mongo:4.4
+        image: arm64v8/mongo:4.4.8
         ports:
         - containerPort: 27017
         resources:
@@ -77,9 +86,11 @@ spec:
       labels:
         app: vehicle-scraper
     spec:
+      imagePullSecrets:
+      - name: regcred
       containers:
       - name: vehicle-scraper
-        image: your-docker-image:latest
+        image: ghcr.io/d3n972/wehiclescrapper:arm
         ports:
         - containerPort: 8080
         resources:
@@ -106,6 +117,7 @@ spec:
               name: vehicle-scraper-config
               key: FETCH_INTERVAL
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
