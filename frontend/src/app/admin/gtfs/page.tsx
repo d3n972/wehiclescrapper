@@ -1,3 +1,4 @@
+import { CollapsableRouteSelector } from "@/components/collapsableRouteSelector";
 import { RouteDisplay } from "@/components/routeSelector";
 import { GTFSClient } from "@/lib/gtfs";
 
@@ -31,6 +32,7 @@ export default async function ImportPage() {
       </div>
       <div>
          <RouteDisplay />
+         <CollapsableRouteSelector />
         </div>
     </div>
   );
