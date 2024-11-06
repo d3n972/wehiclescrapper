@@ -39,3 +39,4 @@ dump/*
 dump
 *.tgz
 log*
+node_modules
