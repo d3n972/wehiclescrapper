@@ -23,7 +23,10 @@ promClient.collectDefaultMetrics({
     gcDurationBuckets: [0.001, 0.01, 0.1, 1, 2, 5],
     register
 });
-async function serveMetrics() {
+async function serveHTTPEndpoints() {
+    app.get('/healthz', (req, res) => {
+        res.send('OK');
+    })
     app.get('/metrics', async (req, res) => {
         res.set('Content-Type', register.contentType);
         res.end(await register.metrics());
@@ -72,7 +75,7 @@ async function processVehicleData(db) {
 }
 
 async function main() {
-    serveMetrics();
+    serveHTTPEndpoints();
     try {
         console.log("[*] Connecting to MongoDB...");
         await client.connect();
