@@ -1,11 +1,37 @@
 const { MongoClient } = require("mongodb");
+const express = require('express');
+const promClient = require('prom-client')
 
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017";
 const API_URL = process.env.API_URL || "https://go.bkk.hu/api/query/v1/ws/otp/api/where/vehicles-for-location.json?lat=47.51152389058045&latSpan=0.0536376020654896&lon=19.06933642193823&lonSpan=0.10078281959248159&key=web-54feeb28-a942-48ae-89a5-9955879ebb2c&version=4&appVersion=3.18.0-164644-810354-e3dd8127";
 const FETCH_INTERVAL = process.env.FETCH_INTERVAL || 10000;
 
 const client = new MongoClient(MONGODB_URI);
+const app = express();
+const register = new promClient.Registry();
+const metrics = {
+    "logged": new promClient.Counter({ name: 'vehicles_collector_logged', help: 'Number of vehicles logged', labelNames: ['date'] }),
+    "total": new promClient.Counter({ name: 'vehicles_collectorlogged_total', help: 'Total number of vehicles logged' }),
+    "lastUpdate": new promClient.Counter({ name: 'vehicles_collector_last_update', help: 'Last update of vehicles logged' }),
+}
+register.registerMetric(metrics.logged);
+register.registerMetric(metrics.total);
+register.registerMetric(metrics.lastUpdate);
 
+promClient.collectDefaultMetrics({
+    prefix: 'vehicles_collector_',
+    gcDurationBuckets: [0.001, 0.01, 0.1, 1, 2, 5],
+    register
+});
+async function serveMetrics() {
+    app.get('/metrics', async (req, res) => {
+        res.set('Content-Type', register.contentType);
+        res.end(await register.metrics());
+    })
+    app.listen(3000, () => {
+        console.log("[+] Metrics server listening on port 3000");
+    })
+}
 async function fetchData() {
     console.log("[*] Fetching data from API...");
     const response = await fetch(API_URL);
@@ -46,6 +72,7 @@ async function processVehicleData(db) {
 }
 
 async function main() {
+    serveMetrics();
     try {
         console.log("[*] Connecting to MongoDB...");
         await client.connect();
