@@ -15,7 +15,7 @@ COPY app.js ./
 
 
 # Expose the port the app runs on
-EXPOSE 8080
+EXPOSE 3000
 
 # Run the application
 CMD ["node", "app.js"]
